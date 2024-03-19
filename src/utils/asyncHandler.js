@@ -31,7 +31,7 @@
 //// So we need to standarize the API ki yeh chize toh bhejni hi bhejni hai //////
 ////// Node.js gives you complete classes for handling errors /////
 const asyncHandler = (requestHandler) => {
-  (req, res, next) => {
+  return (req, res, next) => {
     Promise.resolve(requestHandler(req, res, next)).catch((err) => next(err));
   };
 };
