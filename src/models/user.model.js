@@ -58,7 +58,7 @@ const userSchema = new mongoose.Schema(
 // Meaning of this is that ki agar password modify hua hai toh hi isko change karo otherwise nai
 userSchema.pre("save", async function (req, res, next) {
   if (!this.isModified("password")) return next();
-  this.password = bcrypt.hash(this.password, 10);
+  this.password = await bcrypt.hash(this.password, 10);
   next();
 });
 
