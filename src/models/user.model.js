@@ -56,15 +56,11 @@ const userSchema = new mongoose.Schema(
 
 // But now we have a problem jab bhi ye data save hoga password ko ye save karega suppose ek user aya usne apni photo change kari jaise hi usne save pe click kia voh password change hojayega //
 // Meaning of this is that ki agar password modify hua hai toh hi isko change karo otherwise nai
-userSchema.pre("save", async function (req, res, next) {
+userSchema.pre("save", async function (next) {
   if (!this.isModified("password")) return next();
   this.password = await bcrypt.hash(this.password, 10);
   next();
 });
-
-// userSchema.methods.isPass = function (password) {
-//   return bcrypt.compareSync(password, this.password);
-// };
 
 // This password is which user entered and this.password is encrypted one //
 // Jaise pre ke pass access hota this ka same function ko bhi hota //

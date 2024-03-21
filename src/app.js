@@ -19,6 +19,7 @@ app.use(express.json({ limit: "10kb" }));
 // Now getting url data below //
 app.use(express.urlencoded({ extended: true, limit: "16kb" }));
 app.use(express.static("public"));
+// Note here below cookies ka access ab request aur response dono ke pass hai //
 app.use(cookieParser());
 
 // routes import //
