@@ -8,6 +8,7 @@ import { uploadOnCloudinary } from "../utils/cloudinary.js";
 import { ApiResponse } from "../utils/APIResponse.js";
 import { ApiError } from "../utils/APIError.js";
 import jwt from "jsonwebtoken";
+import mongoose from "mongoose";
 
 // const generateAccessAndRefreshTokens = async (userId) => {
 //   try {
@@ -515,6 +516,140 @@ const updateUserAvatar = asyncHandler(async (req, res) => {
     .json(new ApiResponse(200, user, "Avatar image updates succcessfully"));
 });
 
+const getUserChannelProfile = asyncHandler(async (req, res) => {
+  // When you visit a channel you generally hit a url so we will get it from the params //
+  const { username } = req.params;
+  if (!username?.trim()) {
+    throw new ApiError(400, "Username is missing");
+  }
+  // Yaha pe aapne filter karlia hai ek document aur us document ke base pe hume karna hai lookup //
+  // Now this is our first pipeline jaha pe humne find karlie hai subscribers
+  const channel = await User.aggregate([
+    {
+      $match: {
+        $username: username?.toLowerCase(),
+      },
+    },
+    {
+      $lookup: {
+        from: "subscriptions",
+        localField: "_id",
+        foreignField: "channel",
+        as: "subscribers",
+      },
+    },
+    // Here below you will get all those things which you have subscribed //
+    {
+      $lookup: {
+        from: "subscriptions",
+        localField: "_id",
+        foreignField: "subscriber",
+        as: "subscribedTo",
+      },
+    },
+    // Add field below //
+    {
+      $addFields: {
+        // The size will basicallt calculate the documents
+        subscriberCount: {
+          $size: "$subscribers",
+        },
+        channelsSubscribedToCount: {
+          $size: "$subscribedTo",
+        },
+      },
+      isSubscribed: {
+        $cond: {
+          // The $in operator below objects me bhi dekhleta hai aur arrays me bhi dekhleta hai //
+          if: { $in: [req.user?._id, "$subscribers.subscriber"] },
+          then: true,
+          else: false,
+        },
+      },
+    },
+
+    {
+      // $project means that ki mai saari values ko nai project karunga vaha pe mai usko selected chize dunga //
+      // Meaning below is 1 ka flag lagaane se vo values pass hojayengi //
+      $project: {
+        fullName: 1,
+        username: 1,
+        subscriberCount: 1,
+        channelsSubscribedToCount: 1,
+        isSubscribed: 1,
+        avatar,
+        coverImage,
+        email,
+      },
+    },
+  ]);
+  if (!channel?.length) {
+    throw new ApiError(404, "Channel does not exist");
+  }
+
+  // You can directly return the channel but the frontend guy will cry then😂 so generally return the first element of an array iska matlab hai ek object aaya iski values sidha lagadunga //
+  return res
+    .status(200)
+    .json(
+      new ApiResponse(200, channel[0], "User channel fetched successfully")
+    );
+});
+
+const getWatchHistory = asyncHandler(async (req, res) => {
+  const user = await User.aggregate([
+    {
+      $match: {
+        _id: new mongoose.Types.ObjectId(req.user._id),
+      },
+      // Ab bahut zyada documents jo hai humare watchHistory ke andar aa chuke hai but hume ek sub pipeline lagani padegi aur further down jitni pipeline lagani hai aap laga skte ho //
+      $lookup: {
+        from: "videos",
+        localField: "watchHistory",
+        foreignField: "_id",
+        as: "watchHistory",
+        pipeline: [
+          {
+            // Yaha pe hume pura ka pura user miljayega aaray me toh hume basically itni values nai chahie hume sirf chahie selective fields so further down ek pipeline laga denge //
+            $lookup: {
+              from: "users",
+              localField: "owner",
+              foreignField: "_id",
+              as: "owner",
+              // AB kya hoga ab jaise yahi pe pipeline lagayi hai toh yahi pe ye aapke owner field ke andar chalajayega //
+              pipeline: [
+                {
+                  $project: {
+                    fullName: 1,
+                    username: 1,
+                    avatar: 1,
+                  },
+                },
+              ],
+            },
+          },
+          // Ab sidha hi usko ek object miljayega jisme vo dot karke saari values nikal lega thoda sa frontend waale ke lie easy hojayega
+          {
+            $addFields: {
+              owner: {
+                $first: "$owner",
+              },
+            },
+          },
+        ],
+      },
+    },
+  ]);
+  return res
+    .status(200)
+    .json(
+      new ApiResponse(
+        200,
+        user[0].watchHistory,
+        "Watch history fetched successfully"
+      )
+    );
+});
+
 export {
   registerUser,
   loginUser,
@@ -525,4 +660,6 @@ export {
   updateUserDetails,
   updateUserAvatar,
   deleteUser,
+  getUserChannelProfile,
+  getWatchHistory,
 };

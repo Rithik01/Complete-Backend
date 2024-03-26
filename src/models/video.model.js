@@ -2,6 +2,9 @@
 /* In Mongoose, plugins are reusable pieces of code that provide additional functionality to your schemas and models. They allow you to encapsulate commonly used functionalities, validations, and hooks, making your code more modular, maintainable, and reusable.
 
 Plugins in Mongoose are typically defined as functions that accept a schema as a parameter and then extend or modify that schema. These functions can add new schema methods, static methods, virtuals, middleware hooks, validators, and more. */
+
+// Now here we have the video model and in it we have an id of the video and the owner of the video and we have a user model in which we have a watchHistory section which is basically an array so first process that we think is that we will push the videos id's to the the watchHistory array so we will get many documents so watchHistory se jaise hi mai lookup karunga toh mujhe miljayenge so ek lookup karke mujhe id's mil jayengi par humare pass yaha owner bhi toh hai jo ki ek user hai so we need to do antother lookup which is the nested lookup for chaining //
+
 import mongoose from "mongoose";
 import mongooseAggregatePaginate from "mongoose-aggregate-paginate-v2";
 

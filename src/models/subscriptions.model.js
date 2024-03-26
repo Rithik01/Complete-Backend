@@ -5,6 +5,8 @@
 
 //// Now suppose you want to know that aapne kin channels ko subscribe kar rakha hai then suppose u are User C then you will then Subscriber ki value c usko select karlo aur voh c value jin jin channels me hai usme se channel ki list nikal ke le aoo that's it ////
 
+//////////// Now our main task is to join our subscriptions into the users which is basically known as left join join ka matlab hai subscription se jitni information milti hai usko join kardo humare user ke andar bhi which is done using aggregation pipelines //////////
+
 import mongoose from "mongoose";
 
 const subscriptionSchema = new mongoose.Schema(
