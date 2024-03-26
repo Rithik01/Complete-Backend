@@ -455,12 +455,9 @@ const changeCurrentPassword = asyncHandler(async (req, res, next) => {
 
 // Get current user //
 const getCurrentUser = asyncHandler(async (req, res) => {
-  // Assuming req.user contains the current user's information
-  return res.status(200).json({
-    status: 200, // Optionally include the status code within the response body
-    user: req.user, // Include the current user's information
-    message: "Current user fetched successfully",
-  });
+  return res
+    .status(200)
+    .json(new ApiResponse(200, req.user, "User fetched successfully"));
 });
 
 const updateUserDetails = asyncHandler(async (req, res) => {
