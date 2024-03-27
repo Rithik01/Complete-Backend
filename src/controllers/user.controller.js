@@ -516,6 +516,28 @@ const updateUserAvatar = asyncHandler(async (req, res) => {
     .json(new ApiResponse(200, user, "Avatar image updates succcessfully"));
 });
 
+const updateCoverImage = asyncHandler(async (req, res) => {
+  const coverImagePath = req.file?.path;
+  if (!coverImagePath) {
+    throw new ApiError(400, "No image provided");
+  }
+  const uploadedFile = uploadOnCloudinary(coverImagePath);
+  if (!uploadedFile.url) {
+    throw new ApiError(400, "Error while uploading cover image");
+  }
+  const user = await User.findByIdAndUpdate(
+    req.user?._id,
+    {
+      $set: {
+        coverImage: uploadedFile.url,
+      },
+    },
+    { new: true }
+  )
+    .select("-password")
+    .json(new ApiResponse(200, user, "Cover image updated succcessfully"));
+});
+
 const getUserChannelProfile = asyncHandler(async (req, res) => {
   // When you visit a channel you generally hit a url so we will get it from the params //
   const { username } = req.params;
@@ -662,4 +684,5 @@ export {
   deleteUser,
   getUserChannelProfile,
   getWatchHistory,
+  updateCoverImage,
 };

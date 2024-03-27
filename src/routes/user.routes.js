@@ -10,6 +10,7 @@ import {
   updateUserDetails,
   updateUserAvatar,
   deleteUser,
+  updateCoverImage,
 } from "../controllers/user.controller.js";
 import { upload } from "../middleware/multer.middleware.js";
 import { verifyJWT } from "../middleware/auth.middleware.js";
@@ -40,5 +41,11 @@ router.route("/refresh-token").post(refreshAccessToken);
 router.route("/updateUser").patch(verifyJWT, updateUserDetails);
 router.route("/changepassword").post(verifyJWT, changeCurrentPassword);
 router.route("/deleteUser").delete(verifyJWT, deleteUser);
+router
+  .route("/updateavatar")
+  .patch(verifyJWT, upload.single("avatar"), updateUserAvatar);
+router
+  .route("/updatecoverimage")
+  .patch(verifyJWT, upload.single("coverImage"), updateCoverImage);
 
 export default router;
